@@ -21,7 +21,7 @@
 			var block3 = new  Block();
 			world.addObject(block3, new Point(250, 50));
 			*/
-			var line:Line = new Line(400, 20);
+			var line:Line = new Line(200, 10);
 			world.addObject(line, new Point(0, 300));
 			
 			var line2:Line = new Line(400, -20);

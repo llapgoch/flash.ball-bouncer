@@ -1,9 +1,10 @@
 ﻿package  {
+	import com.davidpreece.util.NumFuncts;
+	
 	import flash.display.MovieClip;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.geom.Point;
-	import com.davidpreece.util.NumFuncts;
 	
 	public class Ball extends BaseObject {
 		protected var xAccelaration:Number = 0;
@@ -47,16 +48,17 @@
 		}
 		
 		protected function gameLoop(ev:Event = null):void{
-			this.yVelocity += Math.min(500, world.getGravity() + yAccelaration);
-			this.xVelocity += Math.min(500, world.getWind() + xAccelaration);
+			this.yVelocity += Math.min(6, world.getGravity() + yAccelaration);
+			this.xVelocity += Math.min(6, world.getWind() + xAccelaration);
 			
-			trace(this.xVelocity);
+			
 			
 			var newCoords:Point = new Point(
 				this.x + xVelocity,
 				this.y + yVelocity
 			);
 			
+			var onFloor:Boolean = false;
 			var onBlock:Boolean = false;
 			var hitTopOrBottom:Boolean;
 			
@@ -75,7 +77,7 @@
 			
 		
 			// Get points on the path of motion and check them against blocks in the world
-			var path:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, yVelocity, 4);
+			var path:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, yVelocity, 1);
 			var hitBlock:Object = this.checkBlockHit(newCoords, path);
 			
 			var lineHit = this.checkLineHit(newCoords, path);
@@ -88,11 +90,7 @@
 			}
 			
 			this.landed = onBlock || hitBlock.landed;
-			
-			if(onBlock){
-				this.xVelocity *= 0.9;
-			}
-			
+					
 			if(newCoords.x >= 550 || newCoords.x <= 0){
 				this.xVelocity *= -1;
 			}
@@ -123,7 +121,7 @@
 		
 		public function checkLineHit(newPos:Point, path:Array):Object{
 			var lines = world.getLines();
-			var pixelAccuracy:Number = 15;
+			var pixelAccuracy:Number = 8;
 			var ballWidth:Number = 29;
 			var ballHeight:Number = 29;
 			var ballHalf:Number = ballWidth / 2;
@@ -156,10 +154,10 @@
 								newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
 							}
 							
-							if(rNewCoords.x - ballHalf <= line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth){
+							if(rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth){
 								rVelocities.x *= -line.getFriction();
 								hitLeftOrRight = true;
-								newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf, rNewCoords.y), linePoint, lineRotation); 
+								newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
 							}
 							
 							if(!hitLeftOrRight){
