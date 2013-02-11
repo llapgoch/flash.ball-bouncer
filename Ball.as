@@ -48,7 +48,9 @@
 		
 		protected function gameLoop(ev:Event = null):void{
 			this.yVelocity += Math.min(500, world.getGravity() + yAccelaration);
-			this.xVelocity += Math.min(5, world.getWind() + xAccelaration);
+			this.xVelocity += Math.min(500, world.getWind() + xAccelaration);
+			
+			trace(this.xVelocity);
 			
 			var newCoords:Point = new Point(
 				this.x + xVelocity,
@@ -73,7 +75,7 @@
 			
 		
 			// Get points on the path of motion and check them against blocks in the world
-			var path:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, yVelocity, 1);
+			var path:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, yVelocity, 4);
 			var hitBlock:Object = this.checkBlockHit(newCoords, path);
 			
 			var lineHit = this.checkLineHit(newCoords, path);
@@ -89,8 +91,6 @@
 			
 			if(onBlock){
 				this.xVelocity *= 0.9;
-				
-				
 			}
 			
 			if(newCoords.x >= 550 || newCoords.x <= 0){
