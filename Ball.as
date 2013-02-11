@@ -3,6 +3,7 @@
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.geom.Point;
+	import com.davidpreece.util.NumFuncts;
 	
 	public class Ball extends BaseObject {
 		protected var xAccelaration:Number = 0;
@@ -11,6 +12,7 @@
 		protected var xVelocity:Number = 30;
 		protected var yVelocity:Number = 0;
 		protected var jumpDistance:Number = -40;
+		protected var prevY:Number = 0;
 		
 		protected var landed:Boolean;
 		
@@ -30,8 +32,6 @@
 				this.xAccelaration = -2;
 			}
 			
-			//trace(ev.keyCode);
-			
 			if(ev.keyCode == 39){
 				this.xAccelaration = 2;
 			}
@@ -47,8 +47,8 @@
 		}
 		
 		protected function gameLoop(ev:Event = null):void{
-			this.yVelocity += Math.min(5, world.getGravity() + yAccelaration);
-			this.xVelocity += world.getWind() + xAccelaration;
+			this.yVelocity += Math.min(500, world.getGravity() + yAccelaration);
+			this.xVelocity += Math.min(5, world.getWind() + xAccelaration);
 			
 			var newCoords:Point = new Point(
 				this.x + xVelocity,
@@ -59,8 +59,8 @@
 			var hitTopOrBottom:Boolean;
 			
 			/* this will be an individual block test rather than just the floor */
-			if(newCoords.y >= this.world.getGround() - this.height){
-				newCoords.y = this.world.getGround() - this.height;
+			if(newCoords.y >= this.world.getGround() - (this.height / 2)){
+				newCoords.y = this.world.getGround() - (this.height / 2);
 				this.yVelocity *= -world.getFloorBounce();
 				this.xVelocity *= world.getGroundFriction();
 				onBlock = true;
@@ -73,22 +73,24 @@
 			
 		
 			// Get points on the path of motion and check them against blocks in the world
-			var path:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, yVelocity);
+			var path:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, yVelocity, 1);
 			var hitBlock:Object = this.checkBlockHit(newCoords, path);
 			
 			var lineHit = this.checkLineHit(newCoords, path);
 			
 			if(lineHit){
-				trace('line hit');
 				newCoords = lineHit.point;
 				this.xVelocity = lineHit.velocities.x;
 				this.yVelocity = lineHit.velocities.y;
+				onBlock = true;
 			}
 			
 			this.landed = onBlock || hitBlock.landed;
 			
 			if(onBlock){
-				this.xVelocity *= world.getGroundFriction();
+				this.xVelocity *= 0.9;
+				
+				
 			}
 			
 			if(newCoords.x >= 550 || newCoords.x <= 0){
@@ -102,6 +104,8 @@
 			if(newCoords.x < 0){
 				newCoords.x = 0;
 			}
+			
+			this.prevY = newCoords.y;
 			
 			this.y = newCoords.y;
 			this.x = newCoords.x;
@@ -119,14 +123,14 @@
 		
 		public function checkLineHit(newPos:Point, path:Array):Object{
 			var lines = world.getLines();
-			var pixelAccuracy:Number = 10;
+			var pixelAccuracy:Number = 15;
 			var ballWidth:Number = 29;
 			var ballHeight:Number = 29;
-
+			var ballHalf:Number = ballWidth / 2;
 			
 			for(var i:int = 0; i < path.length; i++){
 				var ballPoint:Point = new Point(path[i].x, path[i].y);
-
+				
 				for(var j:int = 0; j < lines.length; j++){
 					var line = lines[j];
 					var lineRotation:Number = line.getAngle();
@@ -135,69 +139,57 @@
 					
 					var rNewCoords:Point = rotatePoint(ballPoint, linePoint, -lineRotation);
 					var rVelocities:Point = rotatePoint(new Point(this.xVelocity, this.yVelocity), new Point(0, 0), -lineRotation);
-			
-					if(rNewCoords.x + ballWidth >= line.x && rNewCoords.x < (line.x + origLineWidth)){
-						var aboveIntersect:Boolean = rNewCoords.y + ballHeight > line.y && rNewCoords.y + (ballHeight -  pixelAccuracy) < line.y;
-						var belowIntersect:Boolean = rNewCoords.y < line.y && rNewCoords.y + (ballHeight - pixelAccuracy) > line.y;
+					
+					rVelocities.x = NumFuncts.round(rVelocities.x, 2);
+					rVelocities.y = NumFuncts.round(rVelocities.y, 2);
+					
+					if(rNewCoords.x + ballHalf >= line.x && rNewCoords.x - ballHalf < (line.x + origLineWidth)){
+						var aboveIntersect:Boolean = rNewCoords.y + ballHalf > line.y && rNewCoords.y + (ballHalf - pixelAccuracy) < line.y;
+						var belowIntersect:Boolean = rNewCoords.y - ballHalf < line.y && rNewCoords.y - (ballHalf - pixelAccuracy) > line.y;
 						var hitLeftOrRight:Boolean;
-						var newPoint:Point;
-				
+						var newPoint:Point; 
+						
 						if(belowIntersect || aboveIntersect){
-							if(rNewCoords.x + pixelAccuracy < line.x && (rNewCoords.x + ballWidth) > line.x){
-								rVelocities.x *= -1;
+							if(rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x){
+								rVelocities.x *= -line.getFriction();
 								hitLeftOrRight = true;
-								newPoint = rotatePoint(new Point(line.x, rNewCoords.y), linePoint, lineRotation);
+								newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
 							}
-					
-							if(rNewCoords.x <= line.x + origLineWidth && rNewCoords.x - pixelAccuracy > line.x + origLineWidth){
-								rVelocities.x *= -1;
+							
+							if(rNewCoords.x - ballHalf <= line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth){
+								rVelocities.x *= -line.getFriction();
 								hitLeftOrRight = true;
-								newPoint = rotatePoint(new Point(line.x + origLineWidth, rNewCoords.y), linePoint, lineRotation); 
+								newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf, rNewCoords.y), linePoint, lineRotation); 
 							}
-					
+							
 							if(!hitLeftOrRight){
 								// Flip the y velocity
-								rVelocities.y *= -1;
+								rVelocities.y *= -line.getBounce();
 								// flip back
-					
+								
 								if(aboveIntersect){
-									trace('above');
-									newPoint = rotatePoint(new Point(rNewCoords.x, line.y - ballHeight), linePoint, lineRotation);
-									//this.y = newPoint.y;
-									//this.x = newPoint.x;
+									newPoint = rotatePoint(new Point(rNewCoords.x, Math.floor(line.y - ballHalf)), linePoint, lineRotation);
 								}else{
-									trace('below');
-									newPoint = rotatePoint(new Point(rNewCoords.x, line.y), linePoint, lineRotation);
+									//trace('below', line.y, rNewCoords.y - ballHalf);
+									newPoint = rotatePoint(new Point(rNewCoords.x, Math.ceil(line.y + ballHalf)), linePoint, lineRotation);
 								}
+								
 							}
-					
-						}
-						
-						if(newPoint){
-							var fVelocities:Point = rotatePoint(rVelocities, new Point(0, 0), lineRotation);
 							
-							return {"point":newPoint, 
+						
+							if(newPoint){
+								var fVelocities:Point = rotatePoint(rVelocities, new Point(0, 0), lineRotation);
+								
+								return {"point":newPoint, 
 									"velocities":{
 										"x":fVelocities.x, 
 										"y":fVelocities.y
 									}
-							};
+								};
+							}
+							
 						}
-						
 					}
-					
-					
-					
-					
-					/*
-					if(newX - ballHalf <= 0 || newX + ballHalf >= stage.stageWidth){
-						ball.vx *= -1;
-					}
-					
-					if(newY - ballHalf <= 0 || newY + ballHalf >= stage.stageHeight){
-						ball.vy *= -1;
-					}
-					*/
 				}
 			}
 			
