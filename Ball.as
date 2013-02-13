@@ -51,7 +51,7 @@
 			this.yVelocity += Math.min(6, world.getGravity() + yAccelaration);
 			this.xVelocity += Math.min(6, world.getWind() + xAccelaration);
 			
-			
+			//trace(this.xVelocity, this.yVelocity);
 			
 			var newCoords:Point = new Point(
 				this.x + xVelocity,
@@ -77,7 +77,8 @@
 			
 		
 			// Get points on the path of motion and check them against blocks in the world
-			var path:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, yVelocity, 1);
+			//var path = [new Point(this.x + xVelocity, this.y + yVelocity)];
+			var path:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, yVelocity, 2);
 			var hitBlock:Object = this.checkBlockHit(newCoords, path);
 			
 			var lineHit = this.checkLineHit(newCoords, path);
@@ -121,12 +122,12 @@
 		
 		public function checkLineHit(newPos:Point, path:Array):Object{
 			var lines = world.getLines();
-			var pixelAccuracy:Number = 8;
+			var pixelAccuracy:Number = 12;
 			var ballWidth:Number = 29;
 			var ballHeight:Number = 29;
 			var ballHalf:Number = ballWidth / 2;
 			
-			for(var i:int = 0; i < path.length; i++){
+			for(var i:int = path.length - 1; i > -1; i--){
 				var ballPoint:Point = new Point(path[i].x, path[i].y);
 				
 				for(var j:int = 0; j < lines.length; j++){
@@ -147,14 +148,19 @@
 						var hitLeftOrRight:Boolean;
 						var newPoint:Point; 
 						
+						belowIntersect = false;
+						
 						if(belowIntersect || aboveIntersect){
+							//trace("in bounds", Math.random());
 							if(rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x){
+								//trace("hit left");
 								rVelocities.x *= -line.getFriction();
 								hitLeftOrRight = true;
 								newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
 							}
 							
 							if(rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth){
+							//	trace("hit right");
 								rVelocities.x *= -line.getFriction();
 								hitLeftOrRight = true;
 								newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
@@ -177,6 +183,8 @@
 						
 							if(newPoint){
 								var fVelocities:Point = rotatePoint(rVelocities, new Point(0, 0), lineRotation);
+								
+								trace("hit at ", j, path.length);
 								
 								return {"point":newPoint, 
 									"velocities":{

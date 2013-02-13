@@ -4,7 +4,7 @@
 	public class Line extends BaseObject{
 		protected var angle:Number = 0;
 		protected var lineLength:Number = 100;
-		protected var friction:Number = 0.6;
+		protected var friction:Number = 0.9;
 		protected var bounce:Number = 0.6;
 
 		public function Line(lineLength:Number, angle:Number = 0) {
