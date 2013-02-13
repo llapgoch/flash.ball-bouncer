@@ -13,7 +13,7 @@
 		protected var xVelocity:Number = 30;
 		protected var yVelocity:Number = 0;
 		protected var jumpDistance:Number = -40;
-		protected var prevY:Number = 0;
+		protected var maxAcceleration = 6;
 		
 		public static var HITLEFT = "left";
 		public static var HITRIGHT = "right";
@@ -23,7 +23,7 @@
 		protected var landed:Boolean;
 		
 		public function Ball() {
-			// constructor coded
+	
 		}
 		
 		public override function init(world:World):void{
@@ -53,10 +53,8 @@
 		}
 		
 		protected function gameLoop(ev:Event = null):void{
-			this.yVelocity += Math.min(6, world.getGravity() + yAccelaration);
-			this.xVelocity += Math.min(6, world.getWind() + xAccelaration);
-			
-			//trace(this.xVelocity, this.yVelocity);
+			this.yVelocity += Math.min(this.maxAcceleration, world.getGravity() + yAccelaration);
+			this.xVelocity += Math.min(this.maxAcceleration, world.getWind() + xAccelaration);
 			
 			var newCoords:Point = new Point(
 				this.x + xVelocity,
@@ -82,7 +80,6 @@
 			
 		
 			// Get points on the path of motion and check them against blocks in the world
-			//var path = [new Point(this.x + xVelocity, this.y + yVelocity)];
 			var path:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, yVelocity, 2);
 			var hitBlock:Object = this.checkBlockHit(newCoords, path);
 			
@@ -109,8 +106,6 @@
 				newCoords.x = 0;
 			}
 			
-			this.prevY = newCoords.y;
-			
 			this.y = newCoords.y;
 			this.x = newCoords.x;
 		}
@@ -125,9 +120,11 @@
 			return rp;
 		}
 		
+		// Loop through an array of points to find the first hit point and get the new values for the object
+		/*  TODO: Loop through, find the first hit point of a type, then loop through in reverse to find the last hitpoint
+			of the same type. Return this hit point to preserve velocities */
 		public function checkLineHitPath(newPos:Point, path:Array):Object{
 			var lines = world.getLines();
-
 			
 			for(var i:int = path.length - 1; i > -1; i--){
 				var ballPoint:Point = new Point(path[i].x, path[i].y);
@@ -189,7 +186,6 @@
 				if(!hitLeftOrRight){
 					// Flip the y velocity
 					rVelocities.y *= -line.getBounce();
-					// flip back
 					
 					if(aboveIntersect){
 						newPoint = rotatePoint(new Point(rNewCoords.x, Math.floor(line.y - ballHalf)), linePoint, lineRotation);
@@ -197,12 +193,11 @@
 					}else{
 						newPoint = rotatePoint(new Point(rNewCoords.x, Math.ceil(line.y + ballHalf)), linePoint, lineRotation);
 						hitType = HITBOTTOM;
-					}
-					
-				}
-				
-				
+					}	
+				}				
+
 				if(newPoint){
+					// flip back
 					var fVelocities:Point = rotatePoint(rVelocities, new Point(0, 0), lineRotation);
 					
 					return {
@@ -218,7 +213,6 @@
 		}
 		
 		public function checkBlockHit(newPos:Point, path:Array):Object{
-			// TODO: Turn this into an array
 			var hitObject:HitObject;
 			var hitPoint:Point = new Point(newPos.x, newPos.y);
 			var newY:Number, newX:Number;

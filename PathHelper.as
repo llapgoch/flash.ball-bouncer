@@ -4,9 +4,9 @@
 	public class PathHelper {
 
 		public function PathHelper() {
-			// constructor code
+			
 		}
-		
+		// Increments are the number of pixels on the route to space out.  Lower number = finer 
 		public static function getPointsOnPath(center:Point, xVelocity:Number, yVelocity:Number, increments:Number = 1):Array{
 			var endX:Number = center.x + xVelocity;
 			var endY:Number = center.y + yVelocity;
