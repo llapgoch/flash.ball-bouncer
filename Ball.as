@@ -267,7 +267,6 @@
 				if(hitLeftOrRight){
 					this.xVelocity *= -1;
 				}
-			
 			}
 			
 			if(hitTopOrBottom){
