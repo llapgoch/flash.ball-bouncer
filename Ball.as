@@ -13,7 +13,7 @@
 		protected var xVelocity:Number = 30;
 		protected var yVelocity:Number = 0;
 		protected var jumpDistance:Number = -40;
-		protected var maxAcceleration = 6;
+		protected var maxAcceleration = 60;
 		
 		public static var HITLEFT = "left";
 		public static var HITRIGHT = "right";
@@ -126,16 +126,26 @@
 		public function checkLineHitPath(newPos:Point, path:Array):Object{
 			var lines = world.getLines();
 			
-			for(var i:int = path.length - 1; i > -1; i--){
+			for(var i:int = 0; i < path.length; i++){
 				var ballPoint:Point = new Point(path[i].x, path[i].y);
+				var initialHit:Object; 
 				
 				for(var j:int = 0; j < lines.length; j++){
 					var hit = checkLineHit(ballPoint, lines[j]);
-					
+							
 					if(hit){
-						return hit;
+						// now find the first instance of the first kind of this hit type
+						for(var k:int = path.length - 1; k > 0; k--){
+							var secondHit:Object = checkLineHit(path[k], lines[j]);
+							
+							if(secondHit && secondHit.type == hit.type){
+								return secondHit;
+							}
+						}
+						
 					}
 				}
+				
 			}
 			
 			return null;
@@ -165,9 +175,7 @@
 			var hitLeftOrRight:Boolean;
 			var newPoint:Point; 
 			var hitType:String;
-			
-			belowIntersect = false;
-			
+						
 			if(belowIntersect || aboveIntersect){
 				if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
 					rVelocities.x *= -line.getFriction();
@@ -190,7 +198,9 @@
 					if(aboveIntersect){
 						newPoint = rotatePoint(new Point(rNewCoords.x, Math.floor(line.y - ballHalf)), linePoint, lineRotation);
 						hitType = HITTOP;
+						rVelocities.x *= line.getFriction();
 					}else{
+						
 						newPoint = rotatePoint(new Point(rNewCoords.x, Math.ceil(line.y + ballHalf)), linePoint, lineRotation);
 						hitType = HITBOTTOM;
 					}	
