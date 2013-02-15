@@ -65,13 +65,7 @@
 			var onBlock:Boolean = false;
 			var hitTopOrBottom:Boolean;
 			
-			/* this will be an individual block test rather than just the floor */
-			if(newCoords.y >= this.world.getGround() - (this.height / 2)){
-				newCoords.y = this.world.getGround() - (this.height / 2);
-				this.yVelocity *= -world.getFloorBounce();
-				this.xVelocity *= world.getGroundFriction();
-				onBlock = true;
-			}
+			
 			
 			if(newCoords.y < this.world.getCeiling()){
 				newCoords.y = this.world.getCeiling();
@@ -92,6 +86,15 @@
 				onBlock = true;
 			}
 			
+			
+			/* this will be an individual block test rather than just the floor */
+			if(newCoords.y >= this.world.getGround() - (this.height / 2)){
+				newCoords.y = this.world.getGround() - (this.height / 2);
+				this.yVelocity *= -world.getFloorBounce();
+				this.xVelocity *= world.getGroundFriction();
+				onBlock = true;
+			}
+			
 			this.landed = onBlock || hitBlock.landed;
 					
 			if(newCoords.x >= 550 || newCoords.x <= 0){
@@ -105,6 +108,8 @@
 			if(newCoords.x < 0){
 				newCoords.x = 0;
 			}
+			
+		
 			
 			this.y = newCoords.y;
 			this.x = newCoords.x;
