@@ -40,6 +40,14 @@
 			var ball = new Ball();
 			world.addObject(ball, new Point(200, 0));
 			
+//			var ball2 = new Ball();
+//			world.addObject(ball2, new Point(50, 0));
+//			
+//			var ball3 = new Ball();
+//			world.addObject(ball3, new Point(0, 0));
+//			
+//			var ball4 = new Ball();
+//			world.addObject(ball4, new Point(350, 10));
 		}
 
 	}

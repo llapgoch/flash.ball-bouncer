@@ -65,8 +65,6 @@
 			var onBlock:Boolean = false;
 			var hitTopOrBottom:Boolean;
 			
-			
-			
 			if(newCoords.y < this.world.getCeiling()){
 				newCoords.y = this.world.getCeiling();
 				hitTopOrBottom = true;
@@ -130,10 +128,12 @@
 			of the same type. Return this hit point to preserve velocities */
 		public function checkLineHitPath(newPos:Point, path:Array):Object{
 			var lines = world.getLines();
+			var absoluteHit:Object;
 			
 			for(var i:int = 0; i < path.length; i++){
 				var ballPoint:Point = new Point(path[i].x, path[i].y);
 				var initialHit:Object; 
+				var hits:Array = [];
 				
 				for(var j:int = 0; j < lines.length; j++){
 					var hit = checkLineHit(ballPoint, lines[j]);
@@ -144,11 +144,42 @@
 							var secondHit:Object = checkLineHit(path[k], lines[j]);
 							
 							if(secondHit && secondHit.type == hit.type){
-								return secondHit;
+								if(absoluteHit == null){
+									absoluteHit = secondHit;
+								}
+								hits.push(secondHit);
+								break;
 							}
 						}
 						
 					}
+				}
+				
+				if(hits.length > 1){
+					trace("> 1 HIT", hits);
+					// Calculate the average between all of the hit points and velocities
+					var aggregate:Object = hits[0];
+					for(var l:int = 1; l < hits.length; l++){
+						aggregate.point.x += hits[l].point.x;
+						aggregate.point.y += hits[l].point.y;
+						
+						aggregate.velocities.x += hits[l].velocities.x;
+						aggregate.velocities.y += hits[l].velocities.y;
+					}
+					
+					aggregate.point.x /= hits.length;
+					aggregate.point.y /= hits.length;
+					
+					aggregate.velocities.x /= hits.length;
+					aggregate.velocities.y /= hits.length;
+					
+					trace(aggregate.velocities.x, aggregate.velocities.y);
+					
+					return aggregate;
+				}
+				
+				if(absoluteHit){
+					return absoluteHit;
 				}
 				
 			}
@@ -182,19 +213,21 @@
 			var hitType:String;
 						
 			if(belowIntersect || aboveIntersect){
-//				if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
-//					rVelocities.x *= -line.getFriction();
-//					hitLeftOrRight = true;
-//					newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
-//					hitType = HITLEFT;
-//				}
-				
-//				if((rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth) && rVelocities.x < 0){
-//					rVelocities.x *= -line.getFriction();
-//					hitLeftOrRight = true;
-//					newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
-//					hitType = HITRIGHT;
-//				}
+				if(this.y + ballHalf > line.y){
+					if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
+						rVelocities.x *= -line.getFriction();
+						hitLeftOrRight = true;
+						newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
+						hitType = HITLEFT;
+					}
+					
+					if((rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth) && rVelocities.x < 0){
+						rVelocities.x *= -line.getFriction();
+						hitLeftOrRight = true;
+						newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
+						hitType = HITRIGHT;
+					}
+				}
 				
 				if(!hitLeftOrRight){
 					// Flip the y velocity

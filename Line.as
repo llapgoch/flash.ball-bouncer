@@ -18,6 +18,7 @@
 		protected var yMove:Number = 0;
 		
 		protected static var lastCreatedPoint:Point = new Point(0, 0);
+		protected static var xOverlap:Number = 0;
 
 		public function Line(lineLength:Number, angle:Number = 0) {
 			super();
@@ -40,6 +41,7 @@
 			}
 			
 			lastCreatedPoint = end;
+			lastCreatedPoint.x -= xOverlap;
 			
 			return line;
 		}
@@ -100,8 +102,8 @@
 			
 			var dist:Number = yDirection * yMove;
 			
-			this.y += dist;
-			
+//			this.x += dist;
+//			this.y += dist;
 			if((this.y >= origY + (moveDistance / 2) && yDirection == 1)){
 				yDirection *= -1;
 			}
