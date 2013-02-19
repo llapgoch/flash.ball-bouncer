@@ -182,19 +182,19 @@
 			var hitType:String;
 						
 			if(belowIntersect || aboveIntersect){
-				if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
-					rVelocities.x *= -line.getFriction();
-					hitLeftOrRight = true;
-					newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
-					hitType = HITLEFT;
-				}
+//				if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
+//					rVelocities.x *= -line.getFriction();
+//					hitLeftOrRight = true;
+//					newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
+//					hitType = HITLEFT;
+//				}
 				
-				if((rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth) && rVelocities.x < 0){
-					rVelocities.x *= -line.getFriction();
-					hitLeftOrRight = true;
-					newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
-					hitType = HITRIGHT;
-				}
+//				if((rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth) && rVelocities.x < 0){
+//					rVelocities.x *= -line.getFriction();
+//					hitLeftOrRight = true;
+//					newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
+//					hitType = HITRIGHT;
+//				}
 				
 				if(!hitLeftOrRight){
 					// Flip the y velocity
