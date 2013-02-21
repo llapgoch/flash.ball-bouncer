@@ -23,7 +23,7 @@
 			*/
 			Line.createLine(new Point(0, 300), new Point(100, 300), world);
 			Line.drawTo(new Point(200, 200), world);
-			Line.drawTo(new Point(250, 250), world);
+			Line.drawTo(new Point(250, 190), world);
 			Line.drawTo(new Point(350, 300), world);
 			Line.drawTo(new Point(450, 300), world);
 			Line.drawTo(new Point(500, 310), world);

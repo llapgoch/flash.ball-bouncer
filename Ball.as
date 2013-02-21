@@ -128,15 +128,19 @@
 			of the same type. Return this hit point to preserve velocities */
 		public function checkLineHitPath(newPos:Point, path:Array):Object{
 			var lines = world.getLines();
-			var absoluteHit:Object;
+			var hits:Array = [];
+			
+			// TODO: If there are multiple items in the hit array, use the first hit rather than the last one 
+			// for the aggregate calculations << Doesn't seem to work.
+			// Try always using the highest return point's Y value?
 			
 			for(var i:int = 0; i < path.length; i++){
 				var ballPoint:Point = new Point(path[i].x, path[i].y);
 				var initialHit:Object; 
-				var hits:Array = [];
+				
 				
 				for(var j:int = 0; j < lines.length; j++){
-					var hit = checkLineHit(ballPoint, lines[j]);
+					var hit:Object = checkLineHit(ballPoint, lines[j]);
 							
 					if(hit){
 						// now find the first instance of the first kind of this hit type
@@ -144,10 +148,10 @@
 							var secondHit:Object = checkLineHit(path[k], lines[j]);
 							
 							if(secondHit && secondHit.type == hit.type){
-								if(absoluteHit == null){
-									absoluteHit = secondHit;
-								}
-								hits.push(secondHit);
+								hits.push({
+									"first":hit,
+									"last":secondHit
+								});
 								break;
 							}
 						}
@@ -155,31 +159,26 @@
 					}
 				}
 				
+				// TODO: If velocities are below a certain value then set them to zero to stop the ball shaking
+				
 				if(hits.length > 1){
 					trace("> 1 HIT", hits);
 					// Calculate the average between all of the hit points and velocities
-					var aggregate:Object = hits[0];
+					var aggregate:Object = hits[0].first;
+					
 					for(var l:int = 1; l < hits.length; l++){
-						aggregate.point.x += hits[l].point.x;
-						aggregate.point.y += hits[l].point.y;
-						
-						aggregate.velocities.x += hits[l].velocities.x;
-						aggregate.velocities.y += hits[l].velocities.y;
+						if(aggregate.point.y > hits[l].last.point.y){
+							trace("Use higher");
+							aggregate = hits[l].first;
+						}
 					}
-					
-					aggregate.point.x /= hits.length;
-					aggregate.point.y /= hits.length;
-					
-					aggregate.velocities.x /= hits.length;
-					aggregate.velocities.y /= hits.length;
-					
-					trace(aggregate.velocities.x, aggregate.velocities.y);
 					
 					return aggregate;
 				}
 				
-				if(absoluteHit){
-					return absoluteHit;
+				// Return the furthest point
+				if(hits.length > 0){
+					return hits[0].last;
 				}
 				
 			}
@@ -190,6 +189,7 @@
 		
 		protected function checkLineHit(ballPoint:Point, line:Line){
 			var pixelAccuracy:Number = 12;
+			var yAccuracy:Number = 25;
 			var ballWidth:Number = 29;
 			var ballHeight:Number = 29;
 			var ballHalf:Number = ballWidth / 2;
@@ -206,40 +206,40 @@
 			if(rNewCoords.x + ballHalf < line.x || rNewCoords.x - ballHalf > (line.x + origLineWidth)){
 				return null;
 			}
-			var aboveIntersect:Boolean = rNewCoords.y + ballHalf > line.y && rNewCoords.y + (ballHalf - pixelAccuracy) < line.y;
-			var belowIntersect:Boolean = rNewCoords.y - ballHalf < line.y && rNewCoords.y - (ballHalf - pixelAccuracy) > line.y;
+			var aboveIntersect:Boolean = rNewCoords.y + (ballHalf) > line.y && rNewCoords.y + (ballHalf - yAccuracy) < line.y;
+			var belowIntersect:Boolean = rNewCoords.y - (ballHalf) < line.y && rNewCoords.y - (ballHalf - yAccuracy) > line.y;
 			var hitLeftOrRight:Boolean;
 			var newPoint:Point; 
 			var hitType:String;
 						
 			if(belowIntersect || aboveIntersect){
-				if(this.y + ballHalf > line.y){
-					if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
-						rVelocities.x *= -line.getFriction();
-						hitLeftOrRight = true;
-						newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
-						hitType = HITLEFT;
-					}
-					
-					if((rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth) && rVelocities.x < 0){
-						rVelocities.x *= -line.getFriction();
-						hitLeftOrRight = true;
-						newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
-						hitType = HITRIGHT;
-					}
-				}
+//				if(this.y + ballHalf > line.y){
+//					if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
+//						rVelocities.x *= -line.getFriction();
+//						hitLeftOrRight = true;
+//						newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
+//						hitType = HITLEFT;
+//					}
+//					
+//					if((rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth) && rVelocities.x < 0){
+//						rVelocities.x *= -line.getFriction();
+//						hitLeftOrRight = true;
+//						newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
+//						hitType = HITRIGHT;
+//					}
+//				}
 				
 				if(!hitLeftOrRight){
 					// Flip the y velocity
 					rVelocities.y *= -line.getBounce();
 					
 					if(aboveIntersect){
-						newPoint = rotatePoint(new Point(rNewCoords.x, Math.floor(line.y - ballHalf)), linePoint, lineRotation);
+						newPoint = rotatePoint(new Point(rNewCoords.x, Math.floor(line.y - (ballHalf))), linePoint, lineRotation);
 						hitType = HITTOP;
 						rVelocities.x *= line.getFriction();
 					}else{
 						
-						newPoint = rotatePoint(new Point(rNewCoords.x, Math.ceil(line.y + ballHalf)), linePoint, lineRotation);
+						newPoint = rotatePoint(new Point(rNewCoords.x, Math.ceil(line.y + (ballHalf))), linePoint, lineRotation);
 						hitType = HITBOTTOM;
 					}	
 				}				
@@ -249,8 +249,11 @@
 					var fVelocities:Point = rotatePoint(rVelocities, new Point(0, 0), lineRotation);
 					
 					return {
-						"point":newPoint, 
+						"point":newPoint,
+						"line":line,
 						"type":hitType,
+						"rPoint":rNewCoords,
+						"rVelocities":rVelocities,
 						"velocities":{
 							"x":fVelocities.x, 
 							"y":fVelocities.y
