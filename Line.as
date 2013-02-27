@@ -17,6 +17,7 @@
 		protected var yDirection:int;
 		protected var yMove:Number = 0;
 		
+		protected static var lastStartPoint:Point = new Point(0, 0);
 		protected static var lastCreatedPoint:Point = new Point(0, 0);
 		protected static var xOverlap:Number = 0;
 
@@ -41,6 +42,7 @@
 			}
 			
 			lastCreatedPoint = end;
+			lastStartPoint = start;
 			lastCreatedPoint.x -= xOverlap;
 			
 			return line;
