@@ -16,6 +16,7 @@
 		protected var origY:Number;
 		protected var yDirection:int;
 		protected var yMove:Number = 0;
+		protected var lineId:String = '';
 		
 		protected static var lastStartPoint:Point = new Point(0, 0);
 		protected static var lastCreatedPoint:Point = new Point(0, 0);
@@ -116,8 +117,6 @@
 			}
 			
 		}
-		
-		
 
 	}
 	

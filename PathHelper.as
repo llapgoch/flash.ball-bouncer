@@ -14,7 +14,7 @@
 			var angle:Number = Math.atan2(yVelocity, xVelocity);
 			
 			var maxCount:Number = dist / increments;
-			var points:Array = [];
+			var points:Array = [center];
 			
 			for(var a = 0; a <= maxCount; a++){
 				var loc:Number = (dist / maxCount) * a;
