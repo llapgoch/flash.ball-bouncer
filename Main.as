@@ -21,9 +21,9 @@
 			var block3 = new  Block();
 			world.addObject(block3, new Point(250, 50));
 			*/
-			Line.createLine(new Point(0, 300), new Point(100, 300), world);
-			Line.drawTo(new Point(400, 300), world);
-			Line.drawTo(new Point(400, 200), world);
+			Line.createLine(new Point(0, 50), new Point(100, 200), world);
+			Line.drawTo(new Point(150, 50), world);
+			Line.drawTo(new Point(400, 100), world);
 			Line.drawTo(new Point(550, 190), world);
 			
 			//Line.makeLineFromPoints(new Point(200, 200), new Point(
