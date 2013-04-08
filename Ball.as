@@ -20,6 +20,9 @@
 		public static var HITTOP = "top";
 		public static var HITBOTTOM = "bottom";
 		
+		protected var movingDown:Boolean;
+		protected var movingRight:Boolean;
+		
 		protected var landed:Boolean;
 		
 		public function Ball() {
@@ -77,7 +80,21 @@
 			
 			var lineHit:Object = this.checkLineHitPath(path);
 			
+			
+			
 			if(lineHit){
+//				var yTravel:Number = this.y - lineHit.point.y;
+//				//var path2:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, -5, 1);
+//				
+//				var lineHit2 = this.checkLineHitPath(path2);
+//				
+//				if(lineHit2){
+//					trace("line hit 2", yTravel);	
+//					lineHit = lineHit2;
+//				}
+				
+				
+					
 				newCoords = lineHit.point;
 				this.xVelocity = lineHit.velocities.x;
 				this.yVelocity = lineHit.velocities.y;
@@ -107,7 +124,8 @@
 				newCoords.x = 0;
 			}
 			
-			
+			this.movingDown = newCoords.y > this.y;
+			this.movingRight = newCoords.x > this.x;
 			
 			this.y = newCoords.y;
 			this.x = newCoords.x;
@@ -135,18 +153,12 @@
 				'xVelocity':this.xVelocity,
 				'yVelocity':this.yVelocity
 			};
-		
-//				lines = lines.sort(function(a:Line, b:Line):int{
-////					if(b.x < a.x){
-////						return xVelocity > 0 ? 1 : -1;
-////					}
-////					
-////					if(b.x > a.x){
-////						return xVelocity < 0 ? -1 : 1;
-////					}
-//					
-//					return 0;
-//				});
+			
+			// If we're moving backwards, favour earlier created lines. This is to allow favouring earlier lines to stop items from passing throughs.
+			// This is not a perfect system, as later created lines may be created earlier on the X axis.
+			if(xVelocity <= 0){
+				lines = lines.reverse();
+			}
 			
 			// TODO: If there are multiple items in the hit array, use the first hit rather than the last one 
 			// for the aggregate calculations << Doesn't seem to work.
@@ -188,13 +200,23 @@
 				
 				for(i = 1; i < hits.length; i++){
 					var line:Line = hits[i].line;
-					
+			
 					if(xVelocity > 0){
-						resultPoint.x = Math.min(resultPoint.x, hits[i].point.x);
-						resultVelocities.x = Math.min(resultVelocities.x, hits[i].velocities.x);
+						if(line.getTopPoint() > this.y + ballHalf){
+							resultPoint.x = Math.max(resultPoint.x, hits[i].point.x);
+							resultVelocities.x = Math.max(resultVelocities.x, hits[i].velocities.x);
+						}else{
+							resultPoint.x = Math.min(resultPoint.x, hits[i].point.x);
+							resultVelocities.x = Math.min(resultVelocities.x, hits[i].velocities.x);
+						}
 					}else{
-						resultPoint.x = Math.max(resultPoint.x, hits[i].point.x);
-						resultVelocities.x = Math.max(resultVelocities.x, hits[i].velocities.x);
+						if(line.getTopPoint() > this.y + ballHalf){
+							resultPoint.x = Math.min(resultPoint.x, hits[i].point.x);
+							resultVelocities.x = Math.min(resultVelocities.x, hits[i].velocities.x);
+						}else{
+							resultPoint.x = Math.max(resultPoint.x, hits[i].point.x);
+							resultVelocities.x = Math.max(resultVelocities.x, hits[i].velocities.x);
+						}
 					}
 					
 					if(line.y >= this.y){
@@ -217,15 +239,15 @@
 		
 		
 		protected function checkLineHit(ballPoint:Point, velocities, line:Line){
-			var pixelAccuracy:Number = 12;
-			var yAccuracy:Number = 10;
+			var pixelAccuracy:Number = 3;
+			var yAccuracy:Number = 3;
 			var ballWidth:Number = this.width;
 			var ballHeight:Number = this.height;
 			var ballHalf:Number = ballWidth / 2;
 			var lineRotation:Number = line.getAngle();
 			var linePoint:Point = new Point(line.x, line.y);
 			var origLineWidth:Number = line.getLineLength();
-			
+
 			var rNewCoords:Point = rotatePoint(ballPoint, linePoint, -lineRotation);
 			var rVelocities:Point = rotatePoint(new Point(velocities.xVelocity, velocities.yVelocity), new Point(0, 0), -lineRotation);
 			
@@ -243,7 +265,7 @@
 			var hitType:String;
 						
 			if(belowIntersect || aboveIntersect){
-//				if(this.y + ballHalf > line.y){
+				
 //					if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
 //						rVelocities.x *= -line.getFriction();
 //						hitLeftOrRight = true;
@@ -257,20 +279,21 @@
 //						newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
 //						hitType = HITRIGHT;
 //					}
-//				}
+				
 				
 				if(!hitLeftOrRight){
 					// Flip the y velocity
 					rVelocities.y *= -line.getBounce();
 					
 					if(aboveIntersect){
-						newPoint = rotatePoint(new Point(rNewCoords.x, Math.floor(line.y - (ballHalf))), linePoint, lineRotation);
+						
+						newPoint = rotatePoint(new Point(rNewCoords.x, Math.floor(line.y - (ballHalf + 0.5))), linePoint, lineRotation);
 						hitType = HITTOP;
 						rVelocities.x *= line.getFriction();
 					}else{
-						
-						newPoint = rotatePoint(new Point(rNewCoords.x, Math.ceil(line.y + (ballHalf))), linePoint, lineRotation);
+						newPoint = rotatePoint(new Point(rNewCoords.x, Math.ceil(line.y + (ballHalf + 1))), linePoint, lineRotation);
 						hitType = HITBOTTOM;
+						rVelocities.x *= line.getFriction();
 					}	
 				}				
 

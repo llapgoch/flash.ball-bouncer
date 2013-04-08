@@ -21,10 +21,16 @@
 			var block3 = new  Block();
 			world.addObject(block3, new Point(250, 50));
 			*/
-			Line.createLine(new Point(0, 50), new Point(100, 200), world);
-			Line.drawTo(new Point(150, 50), world);
-			Line.drawTo(new Point(400, 100), world);
-			Line.drawTo(new Point(550, 190), world);
+			Line.createLine(new Point(0, 100), new Point(100, 100), world);
+			Line.drawTo(new Point(180, 200), world);
+			Line.drawTo(new Point(200, 200), world);
+			Line.drawTo(new Point(250, 300), world);
+			Line.drawTo(new Point(300, 300), world);
+			
+			Line.drawTo(new Point(350, 200), world);
+			
+			Line.drawTo(new Point(450, 200), world);
+			Line.drawTo(new Point(550, 100), world);
 			
 			//Line.makeLineFromPoints(new Point(200, 200), new Point(
 			//world.addObject(line, new Point(0, 300));

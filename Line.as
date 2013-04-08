@@ -7,7 +7,7 @@
 	public class Line extends BaseObject{
 		protected var angle:Number = 0;
 		protected var lineLength:Number = 100;
-		protected var friction:Number = 0.95;
+		protected var friction:Number = 0.85;
 		protected var bounce:Number = 0.6;
 		protected var minYMove:Number = 0;
 		protected var maxYMove:Number = 1;
@@ -21,6 +21,7 @@
 		protected static var lastStartPoint:Point = new Point(0, 0);
 		protected static var lastCreatedPoint:Point = new Point(0, 0);
 		protected static var xOverlap:Number = 0;
+		protected static var lineCounter:int = 0;
 
 		public function Line(lineLength:Number, angle:Number = 0) {
 			super();
@@ -36,7 +37,9 @@
 			var dist:Number = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
 			var angle:Number = NumFuncts.radToDeg(Math.atan2(deltaY, deltaX));
 			var line:Line = new Line(dist, angle);
+			line.setLineId("line_" + lineCounter);
 			
+			lineCounter++;
 			if(world){
 				line.init(world);
 				world.addObject(line, start);
@@ -47,6 +50,46 @@
 			lastCreatedPoint.x -= xOverlap;
 			
 			return line;
+		}
+		
+		public function getTopPoint():Number{
+			var startPoint:Point = new Point(this.x, this.y);
+			var deg:Number = NumFuncts.degToRad(this.angle);
+			var endY:Number = Math.sin(deg) * this.lineLength;
+			
+			return Math.min(startPoint.y, startPoint.y + endY);
+		}
+		
+		public function getBottomPoint():Number{
+			var startPoint:Point = new Point(this.x, this.y);
+			var deg:Number = NumFuncts.degToRad(this.angle);
+			var endY:Number = Math.sin(deg) * this.lineLength;
+			
+			return Math.max(startPoint.y, startPoint.y + endY);
+		}
+		
+		public function getLeftPoint():Number{
+			var startPoint:Point = new Point(this.x, this.y);
+			var deg:Number = NumFuncts.degToRad(this.angle);
+			var endX:Number = Math.cos(deg) * this.lineLength;
+			
+			return Math.min(startPoint.x, startPoint.x + endX);
+		}
+		
+		public function getRightPoint():Number{
+			var startPoint:Point = new Point(this.x, this.y);
+			var deg:Number = NumFuncts.degToRad(this.angle);
+			var endX:Number = Math.cos(deg) * this.lineLength;
+			
+			return Math.max(startPoint.x, startPoint.x + endX);
+		}
+		
+		public function getLineId():String{
+			return this.lineId;
+		}
+		
+		public function setLineId(id:String){
+			this.lineId = id;
 		}
 		
 		public static function drawTo(end:Point, world:World):Line{

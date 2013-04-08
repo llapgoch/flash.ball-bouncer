@@ -3,7 +3,7 @@
 	import flash.geom.Point;
 	
 	public class World extends MovieClip {
-		protected var gravity:Number = 5;
+		protected var gravity:Number = 4;
 		protected var ceiling:Number = 0;
 		protected var ground:Number = 400;
 		protected var groundFriction:Number = 0.9;
