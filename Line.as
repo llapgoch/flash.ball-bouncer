@@ -7,7 +7,7 @@
 	public class Line extends BaseObject{
 		protected var angle:Number = 0;
 		protected var lineLength:Number = 100;
-		protected var friction:Number = 0.85;
+		protected var friction:Number = 0.9;
 		protected var bounce:Number = 0.6;
 		protected var minYMove:Number = 0;
 		protected var maxYMove:Number = 1;
@@ -100,6 +100,10 @@
 			return yDirection * yMove;
 		}
 		
+		public function getXVelocity():Number{
+			return yDirection * yMove;
+		}
+		
 		public function getAngle():Number{
 			return this.angle;
 		}
@@ -148,8 +152,9 @@
 			
 			var dist:Number = yDirection * yMove;
 			
-//			this.x += dist;
-//			this.y += dist;
+			this.x += dist;
+			this.y += dist;
+			
 			if((this.y >= origY + (moveDistance / 2) && yDirection == 1)){
 				yDirection *= -1;
 			}

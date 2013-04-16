@@ -80,20 +80,13 @@
 			
 			var lineHit:Object = this.checkLineHitPath(path);
 			
-			
-			
 			if(lineHit){
-//				var yTravel:Number = this.y - lineHit.point.y;
-//				//var path2:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, -5, 1);
+//				var path2:Array = PathHelper.getPointsOnPath(new Point(this.x, this.y), xVelocity, lineHit.point.y - this.y, 1);
+//				var lineHit2:Object = this.checkLineHitPath(path2);
 //				
-//				var lineHit2 = this.checkLineHitPath(path2);
-//				
-//				if(lineHit2){
-//					trace("line hit 2", yTravel);	
+//				if(lineHit2 !== null){
 //					lineHit = lineHit2;
 //				}
-				
-				
 					
 				newCoords = lineHit.point;
 				this.xVelocity = lineHit.velocities.x;
@@ -200,6 +193,8 @@
 				
 				for(i = 1; i < hits.length; i++){
 					var line:Line = hits[i].line;
+					
+					// Removed this as a test - now adjusting the y value first
 			
 					if(xVelocity > 0){
 						if(line.getTopPoint() > this.y + ballHalf){
@@ -219,14 +214,8 @@
 						}
 					}
 					
-					if(line.y >= this.y){
-						resultPoint.y = Math.min(resultPoint.y, hits[i].point.y);
-						resultVelocities.y = Math.min(resultVelocities.y, hits[i].velocities.y);
-					}else{
-						resultPoint.y = Math.min(resultPoint.y, hits[i].point.y);
-						resultVelocities.y = Math.min(resultVelocities.y, hits[i].velocities.y);
-					}
-						
+					resultPoint.y = Math.min(resultPoint.y, hits[i].point.y);
+					resultVelocities.y = Math.min(resultVelocities.y, hits[i].velocities.y);			
 				}
 			
 				hits[0].point = resultPoint;
@@ -266,34 +255,37 @@
 						
 			if(belowIntersect || aboveIntersect){
 				
-//					if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
-//						rVelocities.x *= -line.getFriction();
-//						hitLeftOrRight = true;
-//						newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
-//						hitType = HITLEFT;
-//					}
-//					
-//					if((rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth) && rVelocities.x < 0){
-//						rVelocities.x *= -line.getFriction();
-//						hitLeftOrRight = true;
-//						newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
-//						hitType = HITRIGHT;
-//					}
+					if((rNewCoords.x + (ballHalf - pixelAccuracy) < line.x && (rNewCoords.x + ballHalf) > line.x) && rVelocities.x > 0){
+						rVelocities.x *= -line.getFriction();
+						hitLeftOrRight = true;
+						newPoint = rotatePoint(new Point(line.x - ballHalf, rNewCoords.y), linePoint, lineRotation);
+						hitType = HITLEFT;
+					}
+					
+					if((rNewCoords.x - ballHalf < line.x + origLineWidth && rNewCoords.x - (ballHalf - pixelAccuracy) > line.x + origLineWidth) && rVelocities.x < 0){
+						rVelocities.x *= -line.getFriction();
+						hitLeftOrRight = true;
+						newPoint = rotatePoint(new Point(line.x + origLineWidth + ballHalf + 1, rNewCoords.y), linePoint, lineRotation); 
+						hitType = HITRIGHT;
+					}
 				
 				
 				if(!hitLeftOrRight){
 					// Flip the y velocity
 					rVelocities.y *= -line.getBounce();
 					
-					if(aboveIntersect){
-						
+					if(aboveIntersect){						
 						newPoint = rotatePoint(new Point(rNewCoords.x, Math.floor(line.y - (ballHalf + 0.5))), linePoint, lineRotation);
 						hitType = HITTOP;
 						rVelocities.x *= line.getFriction();
+						
+						newPoint.x += line.getXVelocity();
 					}else{
 						newPoint = rotatePoint(new Point(rNewCoords.x, Math.ceil(line.y + (ballHalf + 1))), linePoint, lineRotation);
 						hitType = HITBOTTOM;
 						rVelocities.x *= line.getFriction();
+
+						newPoint.y += line.getYVelocity();
 					}	
 				}				
 
